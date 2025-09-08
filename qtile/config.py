@@ -226,7 +226,7 @@ def group_switch_selector(qtile):
 
 def shutdown_reboot_menu(qtile):
     """Open a rofi menu for shutting down or rebooting."""
-    option_str = "\n".join(["shutdown", "reboot", "suspend", "nothing"])
+    option_str = "\n".join(["shutdown", "reboot", "suspend", "hibernate", "nothing"])
     result = rofi_selector(option_str, "Shutdown Menu")
     if result == "shutdown":
         send_notification("shutdown", "")
@@ -236,7 +236,10 @@ def shutdown_reboot_menu(qtile):
         subprocess.call(["reboot"])
     elif result == "suspend":
         send_notification("suspend", "")
-        subprocess.call(["systemctl", "suspend"])
+        subprocess.call(["systemctl", "suspend", "-i"])
+    elif result == "hibernate":
+        send_notification("hibernate", "")
+        subprocess.call(["systemctl", "hibernate", "-i"])
     else:
         send_notification("no action", "")
 
