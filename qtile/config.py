@@ -28,7 +28,7 @@
 import math
 import os
 import re
-import subprocess
+import subprocess as sp
 import time
 from typing import List  # noqa: F401
 
@@ -37,8 +37,7 @@ import psutil
 
 # from libqtile.utils import guess_terminal
 from libqtile import bar, hook, layout, widget
-from libqtile.config import (Click, Drag, EzKey, Group, Key, KeyChord, Match,
-                             Screen)
+from libqtile.config import Click, Drag, EzKey, Group, Key, KeyChord, Match, Screen
 from libqtile.core.manager import Qtile
 from libqtile.lazy import lazy
 from libqtile.widget import base
@@ -1162,11 +1161,30 @@ wmname = "LG3D"
 @hook.subscribe.startup_once
 def autostart():
     """Autostart functions."""
-    subprocess.Popen("dunst")
-    subprocess.Popen("picom -b".split())
-    subprocess.call(
-        [os.path.expanduser("~/.config/qtile/autostart.sh"), WALLPAPER, LOCK_WALLPAPER]
-    )
+    sp.Popen(["picom", "-b"])
+    sp.run([os.path.expanduser("~/.screenlayout/default.sh")])
+    sp.Popen(["nitrogen", "--restore"])
+    sp.Popen(["greenclip", "daemon"])
+    sp.Popen(["dunst", "-config", os.path.expanduser("~/.config/dunst/dunstrc")])
+
+    # Audio
+    sp.run(["pacmd", "set-default-sink", "alsa_output.hw_2"])
+    sp.run(["amixer", "-c", "2", "sset", "Speaker", "151"])
+
+    # Nextcloud
+    sp.Popen(["nextcloud", "--background"])
+
+    # Redshift and Screen Locker
+    sp.Popen(["redshift", "-l", "49:8.4"])
+    sp.Popen(["xss-lock", "--", "i3lock", "-e", "-i", LOCK_WALLPAPER])
+
+    sp.Popen(["pcmanfm", "-d"])
+    sp.Popen(["udiskie"])
+
+    # Screen Timeout
+    sp.run(["xset", "s", "600"])
+    sp.run(["setxkbmap", "de", "-variant", "nodeadkeys"])
+    sp.run(os.path.expanduser("~/dotfiles/qtile/wacom_setup.sh"))
 
 
 # @hook.subscribe.client_managed
