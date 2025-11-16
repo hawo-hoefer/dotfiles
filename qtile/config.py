@@ -51,16 +51,14 @@ WALLPAPER = "/usr/share/wallpapers/hex_melange_2.png"
 def send_notification(message, app, urgency="normal", icon=None):
     """Send a notification using dunstify."""
     if icon is not None:
-        subprocess.call(
-            ["dunstify", "-a", f"{app}", f"{message}", "-u", urgency, "-i", icon]
-        )
+        sp.call(["dunstify", "-a", f"{app}", f"{message}", "-u", urgency, "-i", icon])
     else:
-        subprocess.call(["dunstify", "-a", f"{app}", f"{message}", "-u", urgency])
+        sp.call(["dunstify", "-a", f"{app}", f"{message}", "-u", urgency])
 
 
 def send_progress(message, app, progress, urgency="low"):
     """Send a progress notification using dunstify."""
-    subprocess.call(
+    sp.call(
         [
             "dunstify",
             "-a",
@@ -77,7 +75,7 @@ def send_progress(message, app, progress, urgency="low"):
 def subprocess_output(args):
     """Get the output of a subprocess."""
     return (
-        subprocess.Popen(args, stdout=subprocess.PIPE, start_new_session=True)
+        sp.Popen(args, stdout=subprocess.PIPE, start_new_session=True)
         .communicate()[0]
         .decode("utf-8")
         .strip("\n")
@@ -108,7 +106,7 @@ def open_in_firefox(url, how="tab"):
         "tab": "--new-tab",
         "private": "--private-window",
     }
-    subprocess.call(["firefox", mode_map[how], url])
+    sp.call(["firefox", mode_map[how], url])
 
 
 def g_scholar_search(query, how="window"):
@@ -154,6 +152,7 @@ def check_process_running(proc_name):
 
     return False
 
+
 def move_to_prev_screen(qtile):
     """Move a window to the next screen."""
     active_win = qtile.current_window
@@ -161,6 +160,7 @@ def move_to_prev_screen(qtile):
     active_win.cmd_toscreen(next_screen)
     qtile.focus_screen(next_screen, warp=True)
     active_win.focus(warp=True)
+
 
 def move_to_next_screen(qtile):
     """Move a window to the next screen."""
@@ -173,7 +173,7 @@ def move_to_next_screen(qtile):
 
 def circular_selector(options):
     """Use a circular selector for selecting one of the commands"""
-    # sel = subprocess.call(["/home/hawo/bin/selgl", "480", f"{len(options)}"],
+    # sel = sp.call(["/home/hawo/bin/selgl", "480", f"{len(options)}"],
     #                        start_new_session=True)
     # if sel > 0:
     #     return options[sel]
@@ -187,15 +187,15 @@ def circ_selector_pen(qtile):
     selected = circular_selector(keystrokes)
     send_notification("test")
     if selected is not None:
-        subprocess.call(["xdotool", "key", keystrokes[selected]])
+        sp.call(["xdotool", "key", keystrokes[selected]])
 
 
 def rofi_selector(option_string, prompt):
     """Create a rofi selector for options in option_str."""
-    child_process = subprocess.Popen(
+    child_process = sp.Popen(
         ["rofi", "-dmenu", "-p", prompt, "-i"],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
+        stdin=sp.PIPE,
+        stdout=sp.PIPE,
     )
     child_process.stdin.write(option_string.encode("utf-8"))
     return child_process.communicate()[0].decode("utf-8").strip("\n")
@@ -232,19 +232,19 @@ def shutdown_reboot_menu(qtile):
     result = rofi_selector(option_str, "Shutdown Menu")
     if result == "shutdown":
         send_notification("shutdown", "")
-        subprocess.call(["shutdown", "0"])
+        sp.call(["shutdown", "0"])
     elif result == "reboot":
         send_notification("reboot", "")
-        subprocess.call(["reboot"])
+        sp.call(["reboot"])
     elif result == "suspend":
         send_notification("suspend", "")
-        subprocess.call(["systemctl", "suspend"])
+        sp.call(["systemctl", "suspend"])
     else:
         send_notification("no action", "")
 
 
 def update_background():
-    subprocess.run(
+    sp.run(
         [
             "python3",
             os.path.expanduser("~/dotfiles/qtile/set_lockscreen_bkg.py"),
@@ -257,7 +257,7 @@ def update_background():
 
 def reconf_screens(data):
     autorandr_output = (
-        subprocess.run("autorandr --change".split(), capture_output=True)
+        sp.run("autorandr --change".split(), capture_output=True)
         .stdout.decode()
         .splitlines()
     )
@@ -340,7 +340,7 @@ def audio_out_selector(qtile):
     device = out.split(SEP_STR)[0]
 
     try:
-        subprocess.call(["pactl", "set-default-sink", inverted_aliases[device]])
+        sp.call(["pactl", "set-default-sink", inverted_aliases[device]])
         send_notification(f"Selected {device}", "sound control", urgency="low")
     except KeyError:
         send_notification("Changed Nothing", "sound control", urgency="low")
@@ -392,7 +392,7 @@ def current_track_notification(qtile):
 
     # Get spotify album cover URL and set temporary file
     url = playerctl_metadata(format="{{mpris:artUrl}}")
-    subprocess.call(["wget", f"{url}", "-O", TMP_LOCATION])
+    sp.call(["wget", f"{url}", "-O", TMP_LOCATION])
 
     artist = playerctl_metadata(format="{{xesam:artist}}")
 
@@ -421,7 +421,7 @@ class CapsNumLockIndicator_Nice(base.ThreadPoolText):
         """Return a list with the current State."""
         try:
             output = self.call_process(["xset", "q"])
-        except subprocess.CalledProcessError as err:
+        except sp.CalledProcessError as err:
             output = err.output.decode()
 
         if output.startswith("Keyboard"):
@@ -470,9 +470,9 @@ def show_cheatsheet(qtile):
         os.path.expanduser("~"), "dotfiles/qtile/keychords_mangled.txt"
     )
 
-    catp = subprocess.Popen(["cat", cheatsheet_fname], stdout=subprocess.PIPE)
+    catp = sp.Popen(["cat", cheatsheet_fname], stdout=subprocess.PIPE)
     out, _ = catp.communicate()
-    p = subprocess.Popen(
+    p = sp.Popen(
         [
             "yad",
             "--list",
@@ -488,7 +488,7 @@ def show_cheatsheet(qtile):
             "--column=KEYS (2):text",
             "--column=KEY CHORDS:text",
         ],
-        stdin=subprocess.PIPE,
+        stdin=sp.PIPE,
     )
     p.communicate(input=out, timeout=0.001)
 
@@ -566,40 +566,36 @@ alt = "mod1"
 
 terminal = "alacritty"
 
-group_names = ["main", "alt", "visu", "www", "mail", "comms", "media", "background"]
+group_names = ["main", "alt", "www", "visu", "mail", "comms", "media", "background"]
 
 group_syms = [
     "\uf015",  # House
     "\uf46d",  # Another House
     "\uf06e",  # Eye
     "\uf484",  # Globe
-    "\uf6ef",  # Mail
+    "\uf4e8",  # Mail
     "\uf0e6",  # Speech Bubbles
     "\uf26c",  # Screen
     "\uf756",  # Folder
 ]
 
+
 groups = [
-    Group(group_names[0], label=group_syms[0]),
-    Group(group_names[1], label=group_syms[1]),
+    Group("programming", label="\uf120"),
+    Group("alt", label="\uf06e", matches=[Match(wm_instance_class="paraview")]),
     Group(
-        group_names[2],
-        label=group_syms[2],
-        matches=[Match(wm_instance_class="paraview"), Match(wm_class="Zotero")],
-    ),
-    Group(
-        group_names[3],
-        label=group_syms[3],
+        "web",
+        label="\uf484",
         matches=[
             Match(wm_class=w) for w in ["firefox_firefox", "Opera", "Google Chrome"]
         ],
     ),
     Group(
-        group_names[4],
-        label=group_syms[4],
+        "mail",
+        label="\uf52b",
         matches=[
-            Match(wm_class=["Mail", "Thunderbird"]),
-            Match(wm_class=["Rocket.Chat"]),
+            Match(wm_class="Thunderbird"),
+            Match(wm_class="Rocket.Chat"),
         ],
     ),
     Group(
@@ -612,15 +608,46 @@ groups = [
         ],
     ),
     Group(
-        group_names[6],
-        label=group_syms[6],
+        "remote",
+        label="\uf26c",
         matches=[
             Match(wm_class=re.compile(".*spotify.*", flags=re.IGNORECASE)),
             Match(title=re.compile(".*spotify.*", flags=re.IGNORECASE)),
         ],
     ),
-    Group(group_names[7], label=group_syms[7]),
 ]
+
+
+PAPERS_DIR = os.path.expanduser("~/notes/papers/doc")
+
+
+def paper_fuzzy(qtile):
+    files = []
+    for elem in os.scandir(PAPERS_DIR):
+        if elem.is_file() and elem.path.endswith(".pdf"):
+            file_path = elem.path
+            pdf_info = sp.run(
+                ["pdfinfo", file_path], capture_output=True
+            ).stdout.decode("utf-8")
+            title = None
+            for line in pdf_info.splitlines():
+                if "Title:" in line:
+                    title = line.replace("Title:", "").strip()
+
+            selector_input = elem.name
+            if title is not None:
+                selector_input = f"{selector_input} | {title}"
+
+            files.append(selector_input)
+
+    selection = rofi_selector("\n".join(files), prompt="")
+    if selection == "":
+        return
+
+    selection = selection.split("|", maxsplit=1)[0]
+
+    sp.Popen(["okular", os.path.join(PAPERS_DIR, selection)])
+
 
 keys = [
     # Standard window Actions
@@ -683,7 +710,7 @@ keys = [
         [win], "f", lazy.window.toggle_floating(), desc="Window: Toggle floating status"
     ),
     # Qtile Management Actions
-    EzKey("M-C-r", lazy.restart(), desc="System: Restart Qtile"),
+    EzKey("M-C-r", lazy.reload_config(), desc="System: Restart Qtile"),
     EzKey(
         "C-S-<Escape>",
         lazy.function(shutdown_reboot_menu),
@@ -886,6 +913,12 @@ keys = [
         lazy.function(current_track_notification),
         desc="Audio: Display notification with current track",
     ),
+    Key(
+        [win],
+        "p",
+        lazy.function(paper_fuzzy),
+        desc="Launch: Select a paper from ~/notes/papers/doc",
+    ),
 ]
 
 for n, grp in enumerate(groups):
@@ -1051,7 +1084,11 @@ def gen_widgets(this_c, screen):
             foreground=colors[17],
             background=this_c,
         ),
-        widget.CurrentLayoutIcon(scale=0.8, background=this_c),
+        widget.CurrentLayout(
+            scale=0.8,
+            background=this_c,
+            icon_first=True,
+        ),
         spacer(this_c, None, bar_height, dir="r"),
     ]
     if screen == 0:
